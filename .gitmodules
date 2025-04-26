@@ -1,3 +1,9 @@
 [submodule "Pangolin"]
 	path = Pangolin
 	url = https://github.com/stevenlovegrove/Pangolin.git
+[submodule "gflags"]
+	path = gflags
+	url = https://github.com/gflags/gflags
+[submodule "glog"]
+	path = glog
+	url = https://github.com/google/glog.git
