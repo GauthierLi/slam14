@@ -1,0 +1,93 @@
+% !TEX program=xelatex
+\documentclass{article}
+
+\usepackage{ctex}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings, footnote, enumerate, enumitem,
+            fontspec, geometry, graphicx}
+
+\definecolor{lightgray}{RGB}{220,220,220}
+\definecolor{NavyBlue}{RGB}{0,0,128}
+% 设置行间距
+\setstretch{1.25}
+\geometry{a4paper,left=2cm,right=2cm,top=2.5cm,bottom=2cm}
+% enumerate 设置行间距
+\setlist[enumerate]{itemsep=2pt, topsep=3pt, parsep=0pt, leftmargin=2cm}
+
+\title{\textbf{slam14 笔记}}
+\author{Gauthierli\footnote{email: lwklxh@163.com}}
+\date{\today}
+
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section{李群和李代数之间的理解}
+\subsection{$\mathfrak{so}(3)$ 上元素$\omega$的意义}
+假设拿到一个旋转矩阵 $ R \in SO(3)$ ,即三维空间中的合法的旋转（满足：正交矩阵+行列式为1）。那么
+如何求出他在李代数$\mathfrak{so}(3)$上对应的元素，记作$\omega ^{\wedge} $，
+那么这个$\omega ^{\wedge} $的意义是什么？
+
+
+\textbf{数学表达}:
+对于任意 $ R \in \text{SO}(3) $，可以表示为：
+
+$$
+R = \exp(\omega^\wedge)
+$$
+
+其中：
+\begin{enumerate}
+  \item $ \omega \in \mathbb{R}^3 $ 是一个三维向量，表示绕某个轴旋转的角度 × 方向；
+  \item $ \omega^\wedge \in \mathfrak{so}(3) $ 是一个 3×3 的反对称矩阵（即李代数元素）；
+  \item $\exp: \mathfrak{so}(3) \to \text{SO}(3)$ 是指数映射。
+\end{enumerate}
+
+
+几何意义解释:
+
+\textbf{1. $ \omega $ 表示旋转的轴角表示}
+\begin{enumerate}
+  \item 向量 $ \omega \in \mathbb{R}^3 $ 的方向就是旋转轴；
+  \item 它的模长 $ |\omega| $ 表示绕该轴旋转的角度（单位通常是弧度）；
+  \item 所以 $ \omega $ 就是所谓的 \textbf{轴角表示（Axis-Angle Representation）}。
+\end{enumerate}
+
+eg：如果 $ \omega = (0, 0, \theta) $，表示绕 z 轴旋转 $ \theta $ 弧度。
+
+\textbf{2. $\omega^\wedge$ 是旋转的“无穷小生成元”}
+\begin{enumerate}
+\item 李代数 $ \mathfrak{so}(3) $ 中的元素 $ \omega^\wedge $ 可以看作是旋转的“速度”或“微分生成器”；
+\item 如果你把 $ R(t) = \exp(t\omega^\wedge) $ 看作是随着时间 t 变化的连续旋转，那么：
+  \begin{enumerate}
+    \item 在 $ t=0 $ 处，导数是 $ \left.\frac{d}{dt}\right|_{t=0} R(t) = \omega^\wedge $
+    \item 所以 $ \omega^\wedge $ 表示的是这个旋转运动在初始时刻的“角速度”。
+  \end{enumerate}
+\end{enumerate}
+
+\textbf{3. 便于做优化、插值和扰动分析}
+\begin{enumerate}
+\item 在机器人、SLAM、计算机视觉等领域中，经常需要对旋转进行优化或插值；
+\item 直接在 SO(3) 上操作不方便（比如不能直接加），
+  但可以在李代数 $ \mathfrak{so}(3) \cong \mathbb{R}^3 $ 上进行线性运算；
+
+ eg: 给某个旋转加上一个小扰动：
+  $$
+  R' = R \cdot \exp(\delta^\wedge)
+  $$
+  其中 $ \delta \in \mathbb{R}^3 $ 是一个小的扰动向量。
+
+\end{enumerate}
+
+\textbf{总结}：
+ 给定一个旋转矩阵 $ R \in \text{SO}(3) $，它在李代数 $ \mathfrak{so}(3) $
+ 上的对应元素 $ \omega^\wedge $（或其向量形式 $ \omega $）
+ 表示了这个旋转的\textbf{旋转轴和角度信息}，
+ 同时也代表了从单位旋转出发通过指数映射到达当前旋转所需的\textbf{旋转速度/方向}。
+
+\end{document}

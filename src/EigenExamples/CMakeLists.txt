@@ -1,19 +1,24 @@
-cmake_minimum_required( VERSION 3.28 )
+cmake_minimum_required( VERSION 3.24 )
 enable_language(CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 find_package(Pangolin REQUIRED)
 find_package(glog REQUIRED)
 find_package(gflags REQUIRED)
+find_package(Sophus REQUIRED)
 include_directories("/usr/include/eigen3")
 include_directories(${Pangolin_INCLUDE_DIRS})
+include_directories(${Sophus_INCLUDE_DIRS})
 
 project(hello_slam)
 add_executable(use_geometry use_geometry.cpp)
 add_executable(coor_trans coordinate_transform.cpp)
 add_executable(trajectory visualize_trajectory.cpp)
+add_executable(use_sophus use_sophus.cpp)
 
 target_link_libraries(trajectory ${Pangolin_LIBRARIES})
 target_link_libraries(trajectory glog::glog)
 target_link_libraries(trajectory gflags)
+target_link_libraries(use_sophus ${Sophus_LIBRARIES})

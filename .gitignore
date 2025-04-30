@@ -1,3 +1,13 @@
 build/
 .cache/
 compile_commands.json
+draft
+*.log 
+*.out 
+*.pdf 
+*.toc 
+*.fls 
+*.xdv
+*.aux
+*.gz
+*.fdb_latexmk
