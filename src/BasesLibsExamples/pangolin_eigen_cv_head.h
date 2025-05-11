@@ -12,6 +12,7 @@
 #include <pangolin/pangolin.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <unistd.h>
 
 #include <chrono>
