@@ -10,3 +10,6 @@
 [submodule "Sophus"]
 	path = Sophus
 	url = https://github.com/strasdat/Sophus.git
+[submodule "abseil-cpp"]
+	path = abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
