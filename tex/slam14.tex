@@ -2,9 +2,12 @@
 \documentclass{article}
 
 \usepackage{ctex}
+\usepackage{minted}
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{setspace}
+% 表格
+\usepackage{booktabs, diagbox, multirow}
 \usepackage{amsmath, amssymb, amsfonts}
 \usepackage{listings, footnote, enumerate, enumitem,
             fontspec, geometry, graphicx}
@@ -16,6 +19,14 @@
 \geometry{a4paper,left=2cm,right=2cm,top=2.5cm,bottom=2cm}
 % enumerate 设置行间距
 \setlist[enumerate]{itemsep=2pt, topsep=3pt, parsep=0pt, leftmargin=2cm}
+\setminted{
+      linenos, % 启用行号
+      numbersep=5pt, % 行号与代码间的距离
+      frame=single, % 单一边框
+      fontsize=\footnotesize, % 字体大小
+      framesep=2mm, % 边框与代码间的距离
+    }
+\renewcommand{\arraystretch}{1.5}
 
 \title{\textbf{slam14 笔记}}
 \author{Gauthierli\footnote{email: lwklxh@163.com}}
@@ -27,6 +38,159 @@
 \tableofcontents
 \newpage
 
+\section{CmakeList使用指南}
+\subsection{基础使用步骤}
+CMakeLists.txt 是一个文本文件，用于定义如何使用 CMake 工具构建（编译）你的软件项目。
+CMake 是一个跨平台的开源系统，用来管理软件构建过程。它简化了在不同操作系统上构建项目的过程，支持多种编译工具如GNU make, Apple Xcode, MSBuild等。
+
+使用 CMakeLists.txt 的基本步骤：
+\begin{enumerate}[leftmargin=1cm]
+  \item 创建 CMakeLists.txt 文件：在你的项目的根目录下创建这个文件，并根据需要填写内容。
+  \item 设定最低版本要求：指定你的项目所需的最低CMake版本。例如：
+\begin{minted}{bash}
+  cmake_minimum_required(VERSION 3.10)
+\end{minted}
+  \item 定义项目名称和版本号：使用 project 命令来定义项目的名称以及可选的版本号、语言和支持的库。例如：
+\begin{minted}{bash}
+project(MyProject VERSION 1.0 LANGUAGES CXX)
+\end{minted}
+  \item 添加源文件或子目录：你可以直接添加源文件或者包含其他含有 CMakeLists.txt 的子目录。
+\begin{minted}{bash}
+add_executable(MyExecutable main.cpp) # 添加源文件
+add_subdirectory(src) # 包含子目录
+\end{minted}
+  \item 查找并链接库：如果你的项目依赖于外部库，可以使用 find\_package 来定位这些库，
+    并使用 target\_link\_libraries 将它们与目标文件链接起来。
+\begin{minted}{bash}
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+add_executable(use_opencv use_opencv.cpp )
+target_link_libraries(use_opencv ${OpenCV_LIBS} absl::str_format glog::glog gflags)
+\end{minted}
+\item 可以设置关键字来指定生成可执行文件/库文件的路径\footnote{
+PROJECT\_SOURCE\_DIR 在整个项目的所有 CMakeLists.txt 文件和脚本中都是相同的值，
+因为它指向的是最初调用 project() 的那个 CMakeLists.txt 文件所在的目录。}
+\begin{minted}{bash}
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin) # 编译路径下的bin文件夹中
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/libs) # 项目路径下的libs文件夹中
+\end{minted}
+\item 生成构建文件：从命令行进入你的项目目录（即包含 CMakeLists.txt 的目录），
+  运行以下命令生成适合你的开发环境的构建文件：
+\begin{minted}{bash}
+mkdir build && cd build
+cmake ..
+\end{minted}
+\end{enumerate}
+
+C++项目中构建结束后会生成一系列的make文件，然后可以使用 
+make 命令来编译项目并生成可执行文件以及库文件：
+\begin{minted}{bash}
+make -j$(nproc)
+\end{minted}
+
+\subsection{CmakeLists进阶使用方法}
+CMakeLists.txt文件中，使用最多的是命令\footnote{在CMakeLists.txt中，命令名不区分大小写，
+可以使用大小写字母书写命令名}，譬如上例中的 cmake\_minimum\_required 
+project 都 是命令；命令的使用方式有点类似于 C 语言中的函数，因为命令后面需要提供一对括号，
+并且通常需要我们提供参数，多个参数使用空格分隔而不是逗号“,”，这是与函数不同的地方。
+
+其中常用的命令如下：
+\begin{enumerate}[leftmargin=1cm]
+
+\item set 命令常用于设置变量，例如：
+\begin{minted}{bash}
+# 设置变量 MY_VAL
+set(MY_VAL "Hello World!") 
+\end{minted}
+我们也可以用一个变量来表示多个源文件
+
+\begin{minted}{bash}
+set(SRC_LIST a.cpp b.cpp c.cpp) 
+add_executable(${PROJECT_NAME} ${SRC_LIST})
+\end{minted}
+
+\item 在CMakeLists.txt 中添加如下这句可以打印出时间辍
+\begin{minted}{bash}
+  string(TIMESTAMP COMPILE_TIME %Y%m%d-%H%M%S)
+\end{minted}
+
+\item 常用的宏变量，可以使用set指定，或者在编译的时候使用-D指定
+
+\begin{table}[!h]
+  \caption{常见宏定义表}
+  \label{hong}
+  \centering 
+  \begin{tabular}{|c|c|}
+    \hline
+    \textbf{宏定义} & \textbf{说明} \\ \hline
+    CMAKE\_SOURCE\_DIR & 顶层源代码目录 \\ \hline
+    CMAKE\_BINARY\_DIR & 顶层二进制目录 \\ \hline
+    PROJECT\_SOURCE\_DIR & 当前项目的源代码目录 \\ \hline
+    PROJECT\_BINARY\_DIR & 当前项目的二进制目录 \\ \hline
+    CMAKE\_CURRENT\_SOURCE\_DIR & 当前正在处理的 CMakeLists.txt 所在的目录 \\ \hline 
+    CMAKE\_CURRENT\_BINARY\_DIR & 当前正在处理的 CMakeLists.txt 对应的构建目录 \\ \hline 
+    CMAKE\_C\_FLAGS & 用于设置 C 编译器的选项 \\ \hline 
+    CMAKE\_CXX\_FLAGS & 设置 C++ 编译器的选项 \\ \hline 
+    CMAKE\_BUILD\_TYPE & 能指定构建类型，像Debug、Release、RelWithDebInfo等 \\ \hline
+    CMAKE\_C\_COMPILER & 表示 C 编译器的路径 \\ \hline 
+    CMAKE\_CXX\_COMPILER & 为 C++ 编译器的路径 \\ \hline 
+    PROJECT\_NAME & 当前项目的名称，通过project()命令进行设置 \\ \hline 
+    PROJECT\_VERSION & 当前项目的版本号，同样由project()命令设置 \\ \hline 
+    CMAKE\_PROJECT\_NAME & 顶层项目的名称 \\ \hline 
+    CMAKE\_INSTALL\_PREFIX & 安装路径的前缀，默认为/usr/local \\ \hline
+    CMAKE\_INSTALL\_BINDIR & 可执行文件的安装目录，默认是bin \\ \hline
+    CMAKE\_INSTALL\_LIBDIR & 库文件的安装目录，默认是lib \\ \hline
+    CMAKE\_INSTALL\_INCLUDEDIR & 头文件的安装目录，默认是include \\ \hline
+    CMAKE\_EXPORT\_COMPILE\_COMMANDS & 生成compile\_commands.json文件，供 IDE 使用 \\ \hline
+    
+  \end{tabular}
+\end{table}
+
+  \item message 常用于打印调试信息，类似于 printf 函数。
+  \item 判断语句的使用如下，使用方法如下：
+  \begin{minted}{bash}
+    if(WIN32)  # Windows系统
+      message("Building on Windows")
+      set(PLATFORM_LIBS ws2_32)  # Windows网络库
+    elseif(APPLE)  # macOS系统
+      message("Building on macOS")
+      set(PLATFORM_LIBS "-framework Cocoa")  # macOS Cocoa框架
+    elseif(UNIX)  # Linux或其他UNIX系统
+      message("Building on Linux or UNIX")
+      set(PLATFORM_LIBS pthread)  # Linux线程库
+    endif()
+
+  # 判断变量是否定义
+  if(DEFINED MY_VARIABLE)
+    message("MY_VARIABLE is defined")
+  endif()
+
+  # 判断变量是否为空
+  if(MY_VARIABLE)  # 变量存在且非空、非0、非OFF、非FALSE等
+    message("MY_VARIABLE is not empty")
+  else()
+    message("MY_VARIABLE is empty or false")
+  endif()
+
+  # 判断变量是否等于某个值
+  if(MY_VARIABLE STREQUAL "value")
+    message("MY_VARIABLE equals 'value'")
+  endif()
+
+  \end{minted}
+
+\item 自定义选项可以使用option与条件判断结合
+  \begin{minted}{bash}
+  option(ENABLE_TESTING "Build tests" ON)
+  if(ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+  endif()
+  \end{minted}
+
+\end{enumerate}
+
+\newpage
 \section{李群和李代数之间的理解}
 \subsection{$\mathfrak{so}(3)$ 上元素$\omega$的意义}
 假设拿到一个旋转矩阵 $ R \in SO(3)$ ,即三维空间中的合法的旋转（满足：正交矩阵+行列式为1）。那么
